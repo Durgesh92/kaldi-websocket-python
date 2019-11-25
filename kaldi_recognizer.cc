@@ -6,28 +6,12 @@
 using namespace fst;
 using namespace kaldi::nnet3;
 
-template<class Arc>
-ComposeFst<Arc> *TableComposeFst(
-    const Fst<Arc> &ifst1, const Fst<Arc> &ifst2) {
-  typedef LookAheadMatcher< StdFst > M;
-  typedef AltSequenceComposeFilter<M> SF;
-  typedef LookAheadComposeFilter<SF, M>  LF;
-  typedef PushWeightsComposeFilter<LF, M> WF;
-  typedef PushLabelsComposeFilter<WF, M> ComposeFilter;
-  typedef M FstMatcher;
-
-  fst::CacheOptions cache_opts(true, 1 << 25LL);
-  ComposeFstOptions<StdArc, FstMatcher, ComposeFilter> opts(cache_opts);
-
-  return new ComposeFst<Arc>(ifst1, ifst2, opts);
-}
-
 KaldiRecognizer::KaldiRecognizer(Model &model, float sample_frequency) : model_(model), sample_frequency_(sample_frequency) {
 
     feature_pipeline_ = new kaldi::OnlineNnet2FeaturePipeline (model_.feature_info_);
     silence_weighting_ = new kaldi::OnlineSilenceWeighting(*model_.trans_model_, model_.feature_info_.silence_weighting_config, 3);
 
-    decode_fst_ = TableComposeFst(*model_.hcl_fst_, *model_.g_fst_);
+    decode_fst_ = LookaheadComposeFst(*model_.hcl_fst_, *model_.g_fst_, model_.disambig_);
 
     decoder_ = new kaldi::SingleUtteranceNnet3Decoder(model_.nnet3_decoding_config_,
             *model_.trans_model_,
@@ -42,8 +26,8 @@ KaldiRecognizer::KaldiRecognizer(Model &model, float sample_frequency) : model_(
 KaldiRecognizer::~KaldiRecognizer() {
     delete feature_pipeline_;
     delete silence_weighting_;
-    delete decode_fst_;
     delete decoder_;
+    delete decode_fst_;
 }
 
 void KaldiRecognizer::CleanUp()
@@ -141,8 +125,8 @@ std::string KaldiRecognizer::Result()
     // Create JSON object
     ss << "{\"result\" : [ ";
     for (int i = 0; i < size; i++) {
-        ss << "{\"word\": \"" << model_.word_syms_->Find(words[i]) << "\", \"start\" : " << times[i].first << "," <<
-                " \"end\" : " << times[i].second << ", \"conf\" : " << conf[i] << "}";
+        ss << "{\"word\": \"" << model_.word_syms_->Find(words[i]) << "\", \"start\" : " << (frame_offset_ + times[i].first) * 0.03 << "," <<
+                " \"end\" : " << (frame_offset_ + times[i].second) * 0.03 << ", \"conf\" : " << conf[i] << "}";
         if (i != size - 1)
             ss << ",\n";
         else

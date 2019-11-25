@@ -32,7 +32,7 @@ class KaldiRecognizer {
 
         Model &model_;
         SingleUtteranceNnet3Decoder *decoder_;
-        fst::ComposeFst<fst::StdArc> *decode_fst_;
+        fst::LookaheadFst<fst::StdArc, int32> *decode_fst_;
         OnlineNnet2FeaturePipeline *feature_pipeline_;
         OnlineSilenceWeighting *silence_weighting_;
 

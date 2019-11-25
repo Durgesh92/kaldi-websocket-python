@@ -3,12 +3,12 @@
 import asyncio
 import pathlib
 import websockets
-from kaldi_recognizer import Model, KaldiRecognizer
+from kaldi import Model, KaldiRecognizer
 
 model = Model("model")
 
 async def recognize(websocket, path):
-    rec = KaldiRecognizer(model);
+    rec = KaldiRecognizer(model, 16000.0);
     while True:
         message = await websocket.recv()
         if message == '{"eof" : 1}':
@@ -20,7 +20,7 @@ async def recognize(websocket, path):
             await websocket.send(rec.PartialResult())
 
 start_server = websockets.serve(
-    recognize, '127.0.0.1', 2609)
+    recognize, '127.0.0.1', 2700)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
