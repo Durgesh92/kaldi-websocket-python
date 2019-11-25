@@ -22,8 +22,8 @@ namespace kaldi {
 
 #if SWIGJAVA
 %apply char *BYTE {const char *data};
-%apply short *SHORT {const short *sdata};
-%apply float *FLOAT {const float *fdata};
+%ignore KaldiRecognizer::AcceptWaveform(const short *sdata, int len);
+%ignore KaldiRecognizer::AcceptWaveform(const float *fdata, int len);
 #endif
 
 %{
@@ -39,6 +39,11 @@ import java.nio.ByteOrder;
 %typemap(javacode) KaldiRecognizer %{
   public boolean AcceptWaveform(byte[] data) {
     return AcceptWaveform(data, data.length);
+  }
+  public boolean AcceptWaveform(short[] data, int len) {
+    byte[] bdata = new byte[len * 2];
+    ByteBuffer.wrap(bdata).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, 0, len);
+    return AcceptWaveform(bdata, bdata.length);
   }
 %}
 #endif
