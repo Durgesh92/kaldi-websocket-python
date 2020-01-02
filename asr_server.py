@@ -3,7 +3,7 @@
 import asyncio
 import pathlib
 import websockets
-from kaldi import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer
 
 model = Model("model")
 

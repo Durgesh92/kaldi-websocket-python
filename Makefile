@@ -34,13 +34,13 @@ KALDI_LIBS = \
 	`pkg-config --libs python3` \
 	-lm -lpthread
 
-all: _kaldi.so
+all: _vosk.so
 
-_kaldi.so: kaldi_recognizer_wrap.cc kaldi_recognizer.cc model.cc
-	$(CXX) $(CXXFLAGS) -shared -o $@ kaldi_recognizer.cc model.cc kaldi_wrap.cc $(KALDI_LIBS)
+_vosk.so: vosk_wrap.cc kaldi_recognizer.cc model.cc
+	$(CXX) $(CXXFLAGS) -shared -o $@ kaldi_recognizer.cc model.cc vosk_wrap.cc $(KALDI_LIBS)
 
-kaldi_recognizer_wrap.cc: kaldi_recognizer.i
-	swig -python -c++ -o kaldi_wrap.cc kaldi_recognizer.i
+vosk_wrap.cc: vosk.i
+	swig -python -c++ -o vosk_wrap.cc vosk.i
 
 clean:
-	$(RM) *.so kaldi_wrap.cc *.o *.pyc kaldi.py
+	$(RM) *.so vosk_wrap.cc *.o *.pyc kaldi.py

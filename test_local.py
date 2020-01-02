@@ -1,13 +1,17 @@
 #!/usr/bin/python3
 
-from kaldi import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer
 import sys
 import json
 
-model = Model("model")
+if len(sys.argv) != 3:
+    print ("Usage: ./test_local <model_dir> <audio_file>")
+    exit(1)
+
+model = Model(sys.argv[1])
 rec = KaldiRecognizer(model, 16000.0)
 
-wf = open(sys.argv[1], "rb")
+wf = open(sys.argv[2], "rb")
 wf.read(44) # skip header
 
 while True:
