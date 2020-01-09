@@ -5,15 +5,20 @@ import asyncio
 import pathlib
 import websockets
 import concurrent.futures
-from kaldi_recognizer import Model, KaldiRecognizer
+from kaldi_recognizer import Model, KaldiRecognizer, Gpu
 
 if len(sys.argv) > 1:
    model_path = sys.argv[1]
 else:
    model_path = "model"
 
+g = Gpu()
+g.Init()
+def thread_init():
+    g.Instantiate()
+
 model = Model(model_path)
-pool = concurrent.futures.ThreadPoolExecutor()
+pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 loop = asyncio.get_event_loop()
 
 def process_chunk(rec, message):
